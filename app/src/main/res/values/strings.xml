@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ARPlainProjector</string>
+    <string name="snapButton">Take Snap</string>
 </resources>

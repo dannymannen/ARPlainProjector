@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -16,10 +17,16 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 
+import Utilities.CircularToggleVisibilityAnimation;
+
 public class MainActivity extends AppCompatActivity implements CvCameraViewListener2{
 
+
+    private int snapCounter;
     private JavaCameraView mOpenCvCameraView;
     private static final String TAG ="AR App :: ";
+    private CircularToggleVisibilityAnimation resultAnimation;
+
 
 
 
@@ -47,13 +54,21 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
-      //  Bitmap bMap= BitmapFactory.decodeResource(getResources(),R.drawable.image1);
+
+        View resultButton = findViewById(R.id.resultButton);
+        resultButton.setVisibility(View.INVISIBLE);
+        resultAnimation = new CircularToggleVisibilityAnimation(resultButton);
+
+        //  Bitmap bMap= BitmapFactory.decodeResource(getResources(),R.drawable.image1);
         //ImageView img = (ImageView) findViewById(R.id.cameraView);
         //img.setImageResource(R.drawable.image1);
+
         mOpenCvCameraView = (JavaCameraView)findViewById(R.id.OpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.disableFpsMeter();
         mOpenCvCameraView.setCvCameraViewListener(this);
 
+        snapCounter=0;
     }
 
     @Override
@@ -90,5 +105,12 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         return inputFrame.rgba();
+    }
+
+    public void takeSnap(View v) {
+        snapCounter++;
+        if (snapCounter==2){
+            resultAnimation.show();
+        }
     }
 }

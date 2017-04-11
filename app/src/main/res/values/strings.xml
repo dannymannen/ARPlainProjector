@@ -2,4 +2,6 @@
     <string name="app_name">ARPlainProjector</string>
     <string name="snapButton">Take Snap</string>
     <string name="showButton">Show Augmented snaps</string>
+    <string name="showResultsButton">Show Results</string>
+    <string name="infoText">Take at least 2 snaps to see results</string>
 </resources>

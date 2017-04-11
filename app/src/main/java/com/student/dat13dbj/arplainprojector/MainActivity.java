@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
-        Bitmap bMap= BitmapFactory.decodeResource(getResources(),R.drawable.image1);
+      //  Bitmap bMap= BitmapFactory.decodeResource(getResources(),R.drawable.image1);
         //ImageView img = (ImageView) findViewById(R.id.cameraView);
         //img.setImageResource(R.drawable.image1);
         mOpenCvCameraView = (JavaCameraView)findViewById(R.id.OpenCvView);
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
     @Override
     public void onResume() {
         super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_11, this, mLoaderCallback);
     }
 
     @Override

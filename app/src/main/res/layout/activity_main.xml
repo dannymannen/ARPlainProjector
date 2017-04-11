@@ -29,14 +29,27 @@
         android:id="@+id/cameraView" />-->
 
     <Button
+        android:text=""
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/OpenCvView"
+        android:layout_alignRight="@id/OpenCvView"
+        android:layout_centerHorizontal="true"
+        android:layout_weight="1" />
+
+
+    <Button
         android:text="@string/snapButton"
-        android:layout_below="@id/OpenCvView"
+        android:layout_alignBottom="@id/OpenCvView"
+        android:layout_alignLeft="@id/OpenCvView"
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/snapButton"
         android:layout_weight="1" />
 
-    </RelativeLayout>
+
+</RelativeLayout>
 
 

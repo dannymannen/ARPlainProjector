@@ -32,12 +32,12 @@
         android:id="@+id/resultButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/OpenCvView"
-        android:layout_alignRight="@id/OpenCvView"
-        android:layout_centerHorizontal="true"
-        android:visibility="invisible"
         android:layout_weight="1"
-        android:text="@string/showResultsButton" />
+        android:textSize="10sp"
+        android:text="@string/showResultsButton"
+        android:layout_above="@+id/snapButton"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="21dp" />
 
 
     <Button

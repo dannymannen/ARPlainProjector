@@ -61,6 +61,14 @@
         android:text="@string/infoText"
         android:textColor="@color/colorAccent" />
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_above="@id/textView"
+        opencv:srcCompat="@android:color/black"
+        android:layout_alignParentStart="true" />
+
 
 </RelativeLayout>
 

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -15,7 +16,10 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+
+import java.util.ArrayList;
 
 import Utilities.CircularToggleVisibilityAnimation;
 
@@ -27,7 +31,8 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
     private static final String TAG ="AR App :: ";
     private CircularToggleVisibilityAnimation resultAnimation;
 
-
+    private Mat image;
+    private ArrayList<Mat> images;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -69,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
         mOpenCvCameraView.setCvCameraViewListener(this);
 
         snapCounter=0;
+        images = new ArrayList<Mat>();
     }
 
     @Override
@@ -104,13 +110,26 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        image = inputFrame.rgba();
+        return image;
     }
 
     public void takeSnap(View v) {
         snapCounter++;
-        if (snapCounter==2){
-            resultAnimation.show();
+        if(snapCounter<5) {
+            images.add(image);
+            if (snapCounter == 2) {
+                resultAnimation.show();
+            }
+
+            Mat imageDisplay = images.get(snapCounter-1);
+            Bitmap bm = Bitmap.createBitmap(imageDisplay.cols(), imageDisplay.rows(),Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(imageDisplay, bm);
+
+            // find the imageview and draw it!
+                ImageView iv = (ImageView) findViewById(R.id.imageView);
+                iv.setImageBitmap(bm);
+
         }
     }
 }

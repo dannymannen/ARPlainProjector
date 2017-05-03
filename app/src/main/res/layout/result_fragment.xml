@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/firstResultImage"
+        android:layout_width="220dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="30dp"
+        android:layout_alignParentTop="true"
+        opencv:srcCompat="@android:color/black"
+        />
+
+    <ImageView
+        android:id="@+id/secondResultImage"
+        android:layout_width="220dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="30dp"
+        opencv:srcCompat="@android:color/black"
+        android:layout_marginTop="15dp"
+ />
+
+    <ImageView
+        android:id="@+id/thirdResultImage"
+        android:layout_width="220dp"
+        android:layout_height="100dp"
+        android:layout_below="@+id/firstResultImage"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="30dp"
+
+        opencv:srcCompat="@android:color/black"
+       />
+    <ImageView
+        android:id="@+id/fourthResultImage"
+        android:layout_width="220dp"
+        android:layout_height="100dp"
+        android:layout_below="@+id/secondResultImage"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="30dp"
+        android:layout_marginTop="30dp"
+        opencv:srcCompat="@android:color/black"
+        />
+
+    <Button
+        android:id="@+id/returnButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="enterSnapMode"
+        android:text="Take new set of snaps"
+        android:layout_marginBottom="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+</RelativeLayout>

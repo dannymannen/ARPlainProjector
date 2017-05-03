@@ -1,135 +1,130 @@
 package com.student.dat13dbj.arplainprojector;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.JavaCameraView;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 
-import Utilities.CircularToggleVisibilityAnimation;
-
-public class MainActivity extends AppCompatActivity implements CvCameraViewListener2{
+public class MainActivity extends AppCompatActivity {
 
 
-    private int snapCounter;
-    private JavaCameraView mOpenCvCameraView;
-    private static final String TAG ="AR App :: ";
-    private CircularToggleVisibilityAnimation resultAnimation;
+    private MainFragment mainFragment;
+    private ResultFragment resultFragment;
 
-    private Mat image;
+    private ViewPager viewPager;
+    private ScreenSlidePagerAdapter pagerAdapter;
+
     private ArrayList<Mat> images;
-
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV load ok");
-                    mOpenCvCameraView.enableView();
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        System.out.println("Hej1");
+       // android.os.Debug.waitForDebugger();
+        System.out.println("Hej2");
+
+        mainFragment = new MainFragment();
+        resultFragment = new ResultFragment();
 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
-        View resultButton = findViewById(R.id.resultButton);
-        resultButton.setVisibility(View.INVISIBLE);
-        resultAnimation = new CircularToggleVisibilityAnimation(resultButton);
 
-        //  Bitmap bMap= BitmapFactory.decodeResource(getResources(),R.drawable.image1);
-        //ImageView img = (ImageView) findViewById(R.id.cameraView);
-        //img.setImageResource(R.drawable.image1);
+        viewPager = (ViewPager) findViewById(R.id.pager);
+        Fragment[] fragments = {mainFragment,resultFragment};
+        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),fragments);
+        pagerAdapter.setLocked(true,0);
+        viewPager.setAdapter(pagerAdapter);
 
-        mOpenCvCameraView = (JavaCameraView)findViewById(R.id.OpenCvView);
-        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        mOpenCvCameraView.disableFpsMeter();
-        mOpenCvCameraView.setCvCameraViewListener(this);
 
-        snapCounter=0;
-        images = new ArrayList<Mat>();
+       // System.out.println("fragment: "+viewPager.getCurrentItem());
+
+
     }
 
     @Override
     public void onResume() {
+        System.out.println("hejjj");
         super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_11, this, mLoaderCallback);
     }
 
     @Override
     public void onPause()
     {
         super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
     }
 
     public void onDestroy() {
         super.onDestroy();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
     }
 
-
-    @Override
-    public void onCameraViewStarted(int width, int height) {
-
+    public void showResults(View v){
+        ArrayList<Bitmap> resultImages = mainFragment.calculateResults();
+        for (Bitmap b:
+                resultImages ) {
+            System.out.println(b.toString());
+        }
+        pagerAdapter.setLocked(true,1);
+        for (Bitmap b:
+                resultImages ) {
+            System.out.println(b.toString());
+        }
+        resultFragment.setResults(resultImages);
     }
 
-    @Override
-    public void onCameraViewStopped() {
-
+    public void enterSnapMode(View v){
+        pagerAdapter.setLocked(true,0);
+        mainFragment.clearImages();
     }
 
-    @Override
-    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        image = inputFrame.rgba();
-        return image;
+    public void takeSnap(View v){
+        mainFragment.takeSnap(v);
+        if (mainFragment.areAllSnapsTaken()){
+            showResults(v);
+        }
     }
 
-    public void takeSnap(View v) {
-        snapCounter++;
-        if(snapCounter<5) {
-            images.add(image);
-            if (snapCounter == 2) {
-                resultAnimation.show();
-            }
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-            Mat imageDisplay = images.get(snapCounter-1);
-            Bitmap bm = Bitmap.createBitmap(imageDisplay.cols(), imageDisplay.rows(),Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(imageDisplay, bm);
+        private Fragment[] fragments;
+        private boolean locked = true;
+        private int lockedIndex;
 
-            // find the imageview and draw it!
-                ImageView iv = (ImageView) findViewById(R.id.imageView);
-                iv.setImageBitmap(bm);
+        public ScreenSlidePagerAdapter(FragmentManager fm, Fragment[] fragments) {
+            super(fm);
+            this.fragments = fragments;
+        }
 
+        public void setLocked(boolean locked, int page) {
+            this.locked = locked;
+            lockedIndex = page;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if (locked) return fragments[lockedIndex];
+            return fragments[position];
+
+        }
+        @Override
+        public int getCount() {
+            if (locked) return 1;
+            return fragments.length;
+        }
+
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
         }
     }
 }

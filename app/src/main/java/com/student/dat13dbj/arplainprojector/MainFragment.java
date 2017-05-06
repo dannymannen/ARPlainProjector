@@ -134,14 +134,20 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         /*if (snapCounter==0){
             images = new ArrayList<Mat>();
         }*/
-        snapCounter++;
-      //  if(snapCounter<5 && image !=null) {
-            images.add(image);
+        if (image!=null && image.cols()>0 && image.rows()>0){
+            System.out.println("trying to snap image with cols: "+image.cols()+" and rows: "+image.rows()+"-------------------------------");
+            snapCounter++;
+            images.add(image.clone());
             if (snapCounter == 2) {
                 resultButtonAnimation.show();
             }
 
             Mat imageDisplay = images.get(snapCounter-1);
+            for (int i = 0;i<images.size();i++){
+                if (images.get(i).equals(images.get(0))){
+                    System.out.println("Image "+i+" is the same as image 0.----------------");
+                }
+            }
             Bitmap bm = Bitmap.createBitmap(imageDisplay.cols(), imageDisplay.rows(),Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(imageDisplay, bm);
 
@@ -150,16 +156,16 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             iv.setImageBitmap(bm);
             System.out.println("Number images snap: " + images.size());
 
-        //}else{
             if(snapCounter==4){
                 allSnapsTaken=true;
             }
-       // }
+        }
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         image = inputFrame.rgba();
+       // System.out.println("Image loaded with cols: "+image.cols()+" and rows: "+image.rows()+"-------------------------------");
         return image;
     }
 
@@ -175,7 +181,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
     public ArrayList<Bitmap> calculateResults(){
         System.out.println("Number images calc: " + images.size());
-        /*Mat input = images.get(3).clone();
+        Mat input = images.get(0).clone();                          //First image
         Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
         ArrayList<Bitmap> results = new ArrayList<Bitmap>();
 
@@ -191,31 +197,28 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         Features2d.drawKeypoints(input, currentImageKeyPoints, output);
         Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
         Utils.matToBitmap(output, currentResultImage);
-        results.add(currentResultImage);*/
+        results.add(currentResultImage);
 
-        ArrayList<Bitmap> results = new ArrayList<Bitmap>();
-       /* for (int i =0; i<images.size(); i++){
-            Mat input = images.get(i).clone();
-            Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
 
-            FeatureDetector detector=FeatureDetector.create(FeatureDetector.FAST);
-            MatOfKeyPoint currentImageKeyPoints = new MatOfKeyPoint();
-            DescriptorExtractor surfExtractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
+        for (int i =1; i<images.size(); i++){
+            input = images.get(i).clone();
+            currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
+
+            currentImageKeyPoints = new MatOfKeyPoint();
 
             detector.detect(input,currentImageKeyPoints);
 
-            Mat output = new Mat();
+            output = new Mat();
 
             Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
             Features2d.drawKeypoints(input, currentImageKeyPoints, output);
             Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
             Utils.matToBitmap(output, currentResultImage);
             results.add(currentResultImage);
-        }*/
-        System.out.println("mats: ");
+        }
 
 
-        for (int i =0; i<images.size(); i++){
+  /*      for (int i =0; i<images.size(); i++){
             Mat input = images.get(i).clone();
             System.out.println(input.toString());
             Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
@@ -223,7 +226,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             results.add(currentResultImage);
             System.out.println(currentResultImage.toString());
 
-        }
+        }*/
 
         return results;
     }

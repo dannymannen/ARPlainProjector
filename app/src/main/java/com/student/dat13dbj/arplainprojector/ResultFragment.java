@@ -52,11 +52,41 @@ public class ResultFragment extends Fragment {
         ImageView secondResultImage = (ImageView) getView().findViewById(R.id.secondResultImage);
         ImageView thirdResultImage = (ImageView) getView().findViewById(R.id.thirdResultImage);
         ImageView fourthResultImage = (ImageView) getView().findViewById(R.id.fourthResultImage);
+        firstResultImage.setVisibility(View.VISIBLE);
+        secondResultImage.setVisibility(View.VISIBLE);
+        thirdResultImage.setVisibility(View.VISIBLE);
+        fourthResultImage.setVisibility(View.VISIBLE);
 
-        firstResultImage.setImageBitmap(results.get(0));
-        secondResultImage.setImageBitmap(results.get(1));
-      //  thirdResultImage.setImageBitmap(results.get(2));
-       // fourthResultImage.setImageBitmap(results.get(3));
+        switch (results.size()){
+            case 1:
+                firstResultImage.setImageBitmap(results.get(0));
+                secondResultImage.setVisibility(View.INVISIBLE);
+                thirdResultImage.setVisibility(View.INVISIBLE);
+                fourthResultImage.setVisibility(View.INVISIBLE);
+
+                break;
+            case 2:
+                firstResultImage.setImageBitmap(results.get(0));
+                secondResultImage.setImageBitmap(results.get(1));
+                thirdResultImage.setVisibility(View.INVISIBLE);
+                fourthResultImage.setVisibility(View.INVISIBLE);
+                break;
+            case 3:
+                firstResultImage.setImageBitmap(results.get(0));
+                secondResultImage.setImageBitmap(results.get(1));
+                thirdResultImage.setImageBitmap(results.get(2));
+                fourthResultImage.setVisibility(View.INVISIBLE);
+                break;
+            case 4:
+                firstResultImage.setImageBitmap(results.get(0));
+                secondResultImage.setImageBitmap(results.get(1));
+                thirdResultImage.setImageBitmap(results.get(2));
+                fourthResultImage.setImageBitmap(results.get(3));
+                break;
+            default:
+
+                break;
+        }
 
     }
 

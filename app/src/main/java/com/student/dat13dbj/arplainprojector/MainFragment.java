@@ -23,10 +23,12 @@ import org.opencv.android.NativeCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Scalar;
 import org.opencv.engine.OpenCVEngineInterface;
 import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.features2d.KeyPoint;
@@ -48,7 +50,9 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
     private Mat image;
     private ArrayList<Mat> images;
     private boolean allSnapsTaken;
-
+    private ArrayList<MatOfKeyPoint> keyPoints;
+    private ArrayList<Mat> descriptors;
+    private ArrayList<MatOfDMatch> matches;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this.getActivity()) {
         @Override
@@ -92,6 +96,9 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         iv.setImageResource(R.mipmap.no_image);
 
         images = new ArrayList<Mat>();
+        keyPoints = new ArrayList<MatOfKeyPoint>();
+        descriptors = new ArrayList<Mat>();
+        matches = new ArrayList<MatOfDMatch>();
     }
 
     @Nullable
@@ -187,35 +194,70 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
         FeatureDetector detector=FeatureDetector.create(FeatureDetector.FAST);
         MatOfKeyPoint currentImageKeyPoints = new MatOfKeyPoint();
-        DescriptorExtractor surfExtractor = DescriptorExtractor.create(DescriptorExtractor.SURF);
-
+        DescriptorExtractor surfExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
         detector.detect(input,currentImageKeyPoints);
-
+        System.out.println("Detect original kp check");
+        keyPoints.add(0, currentImageKeyPoints);
         Mat output = new Mat();
 
         Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
         Features2d.drawKeypoints(input, currentImageKeyPoints, output);
-        Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
+        System.out.println("Draw original kp check");
+
         Utils.matToBitmap(output, currentResultImage);
         results.add(currentResultImage);
+
+        descriptors.add(0, new Mat());
+        surfExtractor.compute(input,keyPoints.get(0), descriptors.get(0));
+        System.out.println("Descriptors created check");
+
+        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE);
+        System.out.println("Matcher created check");
+
+        Mat OriginalImage = images.get(0).clone();
+        Imgproc.cvtColor(OriginalImage,OriginalImage,Imgproc.COLOR_BGRA2BGR);
 
 
         for (int i =1; i<images.size(); i++){
             input = images.get(i).clone();
-            currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
+            currentResultImage = Bitmap.createBitmap(input.cols()*2, input.rows(),Bitmap.Config.ARGB_8888);
 
             currentImageKeyPoints = new MatOfKeyPoint();
 
             detector.detect(input,currentImageKeyPoints);
+            System.out.println("Detected keypoints for image "+i+" check");
 
+            keyPoints.add(i, currentImageKeyPoints);
             output = new Mat();
 
+            //Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
+           // Features2d.drawKeypoints(input, currentImageKeyPoints, output);
+            //Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
+            //Utils.matToBitmap(output, currentResultImage);
+            //results.add(currentResultImage);
+
+            descriptors.add(i, new Mat());
+            surfExtractor.compute(images.get(i),keyPoints.get(i), descriptors.get(i));
+            System.out.println("Computed descriptors for image "+i+" check");
+
+            matches.add(i-1,new MatOfDMatch());
+            matcher.match(descriptors.get(0), descriptors.get(i), matches.get(i-1));
+            System.out.println("Matched descriptors for image "+i+" check");
+
+
             Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
-            Features2d.drawKeypoints(input, currentImageKeyPoints, output);
-            Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
+            Features2d.drawMatches(OriginalImage, keyPoints.get(0), input, keyPoints.get(i), matches.get(i-1),output);
+            System.out.println("Draw matches for image "+i+" check");
+            System.out.println("input width: " + input.cols() + "input height: " + input.rows());
+            System.out.println("original width: " + OriginalImage.cols() + "original height: " + OriginalImage.rows());
+            System.out.println("output width: " + output.cols() + "output height: " + output.rows());
             Utils.matToBitmap(output, currentResultImage);
             results.add(currentResultImage);
+
+
         }
+
+
 
 
   /*      for (int i =0; i<images.size(); i++){

@@ -23,10 +23,14 @@ import org.opencv.android.NativeCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.engine.OpenCVEngineInterface;
+import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
@@ -246,16 +250,56 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
 
             Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
-            Features2d.drawMatches(OriginalImage, keyPoints.get(0), input, keyPoints.get(i), matches.get(i-1),output);
+            //Features2d.drawMatches(OriginalImage, keyPoints.get(0), input, keyPoints.get(i), matches.get(i-1),output);
             System.out.println("Draw matches for image "+i+" check");
             System.out.println("input width: " + input.cols() + "input height: " + input.rows());
             System.out.println("original width: " + OriginalImage.cols() + "original height: " + OriginalImage.rows());
             System.out.println("output width: " + output.cols() + "output height: " + output.rows());
+
+
+            //feature and connection colors
+            Scalar RED = new Scalar(255,0,0);
+            Scalar GREEN = new Scalar(0,255,0);
+            //output image
+            MatOfByte drawnMatches = new MatOfByte();
+            //this will draw all matches, works fine
+            List<DMatch> matchList = matches.get(i-1).toList();
+            ArrayList<DMatch> matches_final = new ArrayList<DMatch>();
+            MatOfDMatch matches_final_mat = new MatOfDMatch();
+
+            int DIST_LIMIT = 80;
+            for(int j=0; j<matchList.size(); j++){
+                if(matchList.get(j).distance <= DIST_LIMIT){
+                    matches_final.add(matches.get(i-1).toList().get(j));
+                }
+            }
+
+            matches_final_mat.fromList(matches_final);
+         /*   for(int j=0; j< matches_final.size(); j++){
+                System.out.println( matches_final.get(j));
+            }
+
+
+            Point floatPoint= keyPoints.get(0).toArray()[0].pt;
+            System.out.println("x: "+floatPoint.x+" y: "+floatPoint.y+"------------------------------------------");
+
+            matcher.knnMatch(descriptors.get(i), descriptors.get(0), matches, 2, new Mat() , false );
+            for(int j=0; j<matches.get(i-1).rows(); j++){
+
+                if(matches.get(i-1).toArray()[j*matches.get(i-1).cols()].distance > matches.get(i-1).toArray()[j*matches.get(i-1).cols()+1].distance * 0.6){
+                    matches_final.add(i-1,matches.get(i-1).toArray()[j*matches.get(i-1).cols()+1]);
+                }
+            }
+            matches_final_mat.fromList(matches_final);*/
+
+            Features2d.drawMatches(OriginalImage,  keyPoints.get(0), input,  keyPoints.get(i), matches_final_mat,
+                    output, GREEN, RED,  drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
             Utils.matToBitmap(output, currentResultImage);
             results.add(currentResultImage);
-
-
         }
+
+
+
 
 
 

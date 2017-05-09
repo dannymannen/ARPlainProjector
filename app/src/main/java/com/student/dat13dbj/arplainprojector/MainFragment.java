@@ -22,6 +22,7 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.NativeCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDMatch;
@@ -37,8 +38,11 @@ import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.features2d.KeyPoint;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.Objdetect;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import Utilities.CircularToggleVisibilityAnimation;
@@ -146,7 +150,6 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             images = new ArrayList<Mat>();
         }*/
         if (image!=null && image.cols()>0 && image.rows()>0){
-            System.out.println("trying to snap image with cols: "+image.cols()+" and rows: "+image.rows()+"-------------------------------");
             snapCounter++;
             images.add(image.clone());
             if (snapCounter == 2) {
@@ -156,7 +159,6 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             Mat imageDisplay = images.get(snapCounter-1);
             for (int i = 0;i<images.size();i++){
                 if (images.get(i).equals(images.get(0))){
-                    System.out.println("Image "+i+" is the same as image 0.----------------");
                 }
             }
             Bitmap bm = Bitmap.createBitmap(imageDisplay.cols(), imageDisplay.rows(),Bitmap.Config.ARGB_8888);
@@ -165,7 +167,6 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             // find the imageview and draw it!
             ImageView iv = (ImageView) getView().findViewById(R.id.mostCurrentImage);
             iv.setImageBitmap(bm);
-            System.out.println("Number images snap: " + images.size());
 
             if(snapCounter==4){
                 allSnapsTaken=true;
@@ -176,7 +177,6 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         image = inputFrame.rgba();
-       // System.out.println("Image loaded with cols: "+image.cols()+" and rows: "+image.rows()+"-------------------------------");
         return image;
     }
 
@@ -191,32 +191,29 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
     }
 
     public ArrayList<Bitmap> calculateResults(){
-        System.out.println("Number images calc: " + images.size());
-        Mat input = images.get(0).clone();                          //First image
+        //First image
+        Mat input = images.get(0).clone();
         Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
         ArrayList<Bitmap> results = new ArrayList<Bitmap>();
 
-        FeatureDetector detector=FeatureDetector.create(FeatureDetector.FAST);
+        FeatureDetector detector=FeatureDetector.create(FeatureDetector.ORB);
         MatOfKeyPoint currentImageKeyPoints = new MatOfKeyPoint();
         DescriptorExtractor surfExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
+        // Detect first image keypoints
         detector.detect(input,currentImageKeyPoints);
-        System.out.println("Detect original kp check");
         keyPoints.add(0, currentImageKeyPoints);
         Mat output = new Mat();
-
+        // Draw first image keypoints
         Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
         Features2d.drawKeypoints(input, currentImageKeyPoints, output);
-        System.out.println("Draw original kp check");
-
         Utils.matToBitmap(output, currentResultImage);
         results.add(currentResultImage);
 
+        // Compute first image descriptor
         descriptors.add(0, new Mat());
         surfExtractor.compute(input,keyPoints.get(0), descriptors.get(0));
-        System.out.println("Descriptors created check");
 
-        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE);
-        System.out.println("Matcher created check");
+        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
 
         Mat OriginalImage = images.get(0).clone();
         Imgproc.cvtColor(OriginalImage,OriginalImage,Imgproc.COLOR_BGRA2BGR);
@@ -226,93 +223,65 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             input = images.get(i).clone();
             currentResultImage = Bitmap.createBitmap(input.cols()*2, input.rows(),Bitmap.Config.ARGB_8888);
 
+            // Detect ith image keypoints
             currentImageKeyPoints = new MatOfKeyPoint();
-
             detector.detect(input,currentImageKeyPoints);
-            System.out.println("Detected keypoints for image "+i+" check");
-
             keyPoints.add(i, currentImageKeyPoints);
-            output = new Mat();
 
-            //Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
-           // Features2d.drawKeypoints(input, currentImageKeyPoints, output);
-            //Imgproc.cvtColor(input,input,Imgproc.COLOR_BGR2BGRA);
-            //Utils.matToBitmap(output, currentResultImage);
-            //results.add(currentResultImage);
-
+            // Compute ith image descriptor
             descriptors.add(i, new Mat());
             surfExtractor.compute(images.get(i),keyPoints.get(i), descriptors.get(i));
-            System.out.println("Computed descriptors for image "+i+" check");
 
+            // Match discriptor form the first image and the ith image
             matches.add(i-1,new MatOfDMatch());
-            matcher.match(descriptors.get(0), descriptors.get(i), matches.get(i-1));
-            System.out.println("Matched descriptors for image "+i+" check");
+            matcher.knnMatch(descriptors.get(0), descriptors.get(i), matches, 5);
 
-
-            Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
-            //Features2d.drawMatches(OriginalImage, keyPoints.get(0), input, keyPoints.get(i), matches.get(i-1),output);
-            System.out.println("Draw matches for image "+i+" check");
-            System.out.println("input width: " + input.cols() + "input height: " + input.rows());
-            System.out.println("original width: " + OriginalImage.cols() + "original height: " + OriginalImage.rows());
-            System.out.println("output width: " + output.cols() + "output height: " + output.rows());
-
-
-            //feature and connection colors
-            Scalar RED = new Scalar(255,0,0);
-            Scalar GREEN = new Scalar(0,255,0);
-            //output image
-            MatOfByte drawnMatches = new MatOfByte();
-            //this will draw all matches, works fine
-            List<DMatch> matchList = matches.get(i-1).toList();
-            ArrayList<DMatch> matches_final = new ArrayList<DMatch>();
-            MatOfDMatch matches_final_mat = new MatOfDMatch();
-
-            int DIST_LIMIT = 80;
-            for(int j=0; j<matchList.size(); j++){
-                if(matchList.get(j).distance <= DIST_LIMIT){
-                    matches_final.add(matches.get(i-1).toList().get(j));
+            // Ratio test
+            LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
+            for (Iterator<MatOfDMatch> iterator = matches.iterator(); iterator.hasNext();) {
+                MatOfDMatch matOfDMatch = (MatOfDMatch) iterator.next();
+                if (matOfDMatch.toArray()[0].distance / matOfDMatch.toArray()[1].distance < 0.9) {
+                    good_matches.add(matOfDMatch.toArray()[0]);
                 }
             }
 
-            matches_final_mat.fromList(matches_final);
-         /*   for(int j=0; j< matches_final.size(); j++){
-                System.out.println( matches_final.get(j));
+            // Get keypoint coordinates of good matches to find homography and remove outliers using RANSAC
+            List<Point> pts1 = new ArrayList<Point>();
+            List<Point> pts2 = new ArrayList<Point>();
+            for(int j = 0; j<good_matches.size(); j++){
+                pts1.add(keyPoints.get(0).toList().get(good_matches.get(j).queryIdx).pt);
+                pts2.add(keyPoints.get(i).toList().get(good_matches.get(j).trainIdx).pt);
             }
 
+            // Convertion of data types - there is maybe a more beautiful way
+            Mat outputMask = new Mat();
+            MatOfPoint2f pts1Mat = new MatOfPoint2f();
+            pts1Mat.fromList(pts1);
+            MatOfPoint2f pts2Mat = new MatOfPoint2f();
+            pts2Mat.fromList(pts2);
 
-            Point floatPoint= keyPoints.get(0).toArray()[0].pt;
-            System.out.println("x: "+floatPoint.x+" y: "+floatPoint.y+"------------------------------------------");
+            // Find homography - here just used to perform match filtering with RANSAC, but could be used to e.g. stitch images
+            // the smaller the allowed reprojection error (here 15), the more matches are filtered
+            Mat Homog = Calib3d.findHomography(pts1Mat, pts2Mat, Calib3d.RANSAC, 0.995, outputMask);
 
-            matcher.knnMatch(descriptors.get(i), descriptors.get(0), matches, 2, new Mat() , false );
-            for(int j=0; j<matches.get(i-1).rows(); j++){
-
-                if(matches.get(i-1).toArray()[j*matches.get(i-1).cols()].distance > matches.get(i-1).toArray()[j*matches.get(i-1).cols()+1].distance * 0.6){
-                    matches_final.add(i-1,matches.get(i-1).toArray()[j*matches.get(i-1).cols()+1]);
+            // OutputMask contains zeros and ones indicating which matches are filtered
+            LinkedList<DMatch> better_matches = new LinkedList<DMatch>();
+            for (int j = 0; j < good_matches.size(); j++) {
+                if (outputMask.get(j, 0)[0] != 0.0) {
+                    better_matches.add(good_matches.get(j));
                 }
             }
-            matches_final_mat.fromList(matches_final);*/
 
-            Features2d.drawMatches(OriginalImage,  keyPoints.get(0), input,  keyPoints.get(i), matches_final_mat,
-                    output, GREEN, RED,  drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
-            Utils.matToBitmap(output, currentResultImage);
+            // Draw all matches between first and the ith image
+            Mat outputImg = new Mat();
+            MatOfDMatch better_matches_mat = new MatOfDMatch();
+            better_matches_mat.fromList(better_matches);
+            Imgproc.cvtColor(OriginalImage, OriginalImage, Imgproc.COLOR_RGBA2RGB, 1);
+            Imgproc.cvtColor(input, input, Imgproc.COLOR_RGBA2RGB, 1);
+            Features2d.drawMatches(OriginalImage,  keyPoints.get(0), input,  keyPoints.get(i), better_matches_mat, outputImg);
+            Utils.matToBitmap(outputImg, currentResultImage);
             results.add(currentResultImage);
         }
-
-
-
-
-
-
-
-  /*      for (int i =0; i<images.size(); i++){
-            Mat input = images.get(i).clone();
-            System.out.println(input.toString());
-            Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(input, currentResultImage);
-            results.add(currentResultImage);
-            System.out.println(currentResultImage.toString());
-
-        }*/
 
         return results;
     }

@@ -5,4 +5,5 @@
     <string name="showResultsButton">Show Results</string>
     <string name="infoText">Take at least 2 snaps to see results</string>
     <string name="latestImageLabel">Latest Image</string>
+    <string name="BaseImageLabel">First Image</string>
 </resources>

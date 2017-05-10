@@ -3,6 +3,7 @@ package com.student.dat13dbj.arplainprojector;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -30,6 +31,7 @@ import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.engine.OpenCVEngineInterface;
 import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
@@ -37,9 +39,12 @@ import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.features2d.KeyPoint;
+import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -193,6 +198,16 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
     public ArrayList<Bitmap> calculateResults(){
         //First image
         Mat input = images.get(0).clone();
+        //Load last supper image
+        Mat resourceImage = null;
+        try {
+            resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+        } catch (IOException e) {
+            System.out.println("Fail");
+            e.printStackTrace();
+        }
+        Imgproc.resize(resourceImage,resourceImage,new Size(800,460));
+
         Bitmap currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
         ArrayList<Bitmap> results = new ArrayList<Bitmap>();
 
@@ -203,10 +218,14 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         detector.detect(input,currentImageKeyPoints);
         keyPoints.add(0, currentImageKeyPoints);
         Mat output = new Mat();
-        // Draw first image keypoints
+        // Draw first image and its keypoints
         Imgproc.cvtColor(input,input,Imgproc.COLOR_BGRA2BGR);
         Features2d.drawKeypoints(input, currentImageKeyPoints, output);
         Utils.matToBitmap(output, currentResultImage);
+        results.add(currentResultImage);
+        //Draw resource image
+        currentResultImage = Bitmap.createBitmap(resourceImage.cols(), resourceImage.rows(),Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(resourceImage, currentResultImage);
         results.add(currentResultImage);
 
         // Compute first image descriptor
@@ -220,6 +239,15 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
 
         for (int i =1; i<images.size(); i++){
+
+            try {
+                resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+            } catch (IOException e) {
+                System.out.println("Fail");
+                e.printStackTrace();
+            }
+            Imgproc.resize(resourceImage,resourceImage,new Size(800,460));
+
             input = images.get(i).clone();
             currentResultImage = Bitmap.createBitmap(input.cols()*2, input.rows(),Bitmap.Config.ARGB_8888);
 
@@ -234,13 +262,13 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
             // Match discriptor form the first image and the ith image
             matches.add(i-1,new MatOfDMatch());
-            matcher.knnMatch(descriptors.get(0), descriptors.get(i), matches, 5);
+            matcher.knnMatch(descriptors.get(0), descriptors.get(i), matches, 2);
 
             // Ratio test
             LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
             for (Iterator<MatOfDMatch> iterator = matches.iterator(); iterator.hasNext();) {
                 MatOfDMatch matOfDMatch = (MatOfDMatch) iterator.next();
-                if (matOfDMatch.toArray()[0].distance / matOfDMatch.toArray()[1].distance < 0.9) {
+                if (matOfDMatch.toArray()[0].distance / matOfDMatch.toArray()[1].distance < 0.6) {
                     good_matches.add(matOfDMatch.toArray()[0]);
                 }
             }
@@ -262,7 +290,14 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
             // Find homography - here just used to perform match filtering with RANSAC, but could be used to e.g. stitch images
             // the smaller the allowed reprojection error (here 15), the more matches are filtered
-            Mat Homog = Calib3d.findHomography(pts1Mat, pts2Mat, Calib3d.RANSAC, 0.995, outputMask);
+            if(pts1Mat.rows() >= 4|| pts2Mat.rows() >= 4) {
+                Mat homog = Calib3d.findHomography(pts1Mat, pts2Mat, Calib3d.RANSAC, 0.995, outputMask);
+
+            Mat homogImage= new Mat();
+
+            Imgproc.warpPerspective(resourceImage, homogImage, homog, new Size(resourceImage.cols(), resourceImage.rows()));
+            System.out.println("Homog for image "+i+" size is: "+homog.rows()+" "+homog.cols());
+            System.out.println("Resource image size is: "+resourceImage.rows()+" "+resourceImage.cols());
 
             // OutputMask contains zeros and ones indicating which matches are filtered
             LinkedList<DMatch> better_matches = new LinkedList<DMatch>();
@@ -279,8 +314,32 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
             Imgproc.cvtColor(OriginalImage, OriginalImage, Imgproc.COLOR_RGBA2RGB, 1);
             Imgproc.cvtColor(input, input, Imgproc.COLOR_RGBA2RGB, 1);
             Features2d.drawMatches(OriginalImage,  keyPoints.get(0), input,  keyPoints.get(i), better_matches_mat, outputImg);
+
+            /*
+            //Calibrate camera
+            Mat cameraMat = new Mat();
+            Mat dist = new Mat();
+            ArrayList<Mat> rvec = new ArrayList<Mat>();
+            ArrayList<Mat> tvec = new ArrayList<Mat>();
+            ArrayList<Mat> worldPoints = new ArrayList<Mat>();
+            worldPoints.add(0, new Mat());
+            better_matches_mat.assignTo(worldPoints.get(0));
+            ArrayList<Mat> imagePoints = new ArrayList<Mat>();
+            imagePoints.add(0, new Mat());
+            pts1Mat.assignTo(imagePoints.get(0));
+            System.out.println("worldPoints: " + worldPoints.toString());
+            System.out.println("imagePoints: " + imagePoints.toString());
+            Calib3d.calibrateCamera(worldPoints, imagePoints, OriginalImage.size(), cameraMat, dist, rvec, tvec); //
+            System.out.println("CameraMat: " + cameraMat.toString());
+            */
+            //Update result
             Utils.matToBitmap(outputImg, currentResultImage);
             results.add(currentResultImage);
+
+            currentResultImage = Bitmap.createBitmap(homogImage.cols(), homogImage.rows(),Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(homogImage, currentResultImage);
+            results.add(currentResultImage);
+            }
         }
 
         return results;

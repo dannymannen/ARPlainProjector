@@ -7,6 +7,14 @@
     xmlns:opencv="http://schemas.android.com/apk/res-auto">
 
     <ImageView
+        android:id="@+id/firstHomogImage"
+        android:layout_width="220dp"
+        android:layout_height="100dp"
+        opencv:srcCompat="@android:color/black"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <ImageView
         android:id="@+id/firstResultImage"
         android:layout_width="220dp"
         android:layout_height="100dp"
@@ -34,6 +42,7 @@
         android:layout_alignStart="@+id/firstResultImage"
         android:layout_toStartOf="@+id/scrollView2" />
 
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -55,17 +64,39 @@
                 opencv:srcCompat="@android:color/black" />
 
             <ImageView
-                android:id="@+id/thirdResultImage"
+                android:id="@+id/secondHomogImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/secondResultImage"
                 opencv:srcCompat="@android:color/black" />
 
             <ImageView
+                android:id="@+id/thirdResultImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/secondHomogImage"
+                opencv:srcCompat="@android:color/black" />
+
+            <ImageView
+                android:id="@+id/thirdHomogImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_below="@+id/thirdResultImage"
+                opencv:srcCompat="@android:color/black" />
+
+            <ImageView
                 android:id="@+id/fourthResultImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/thirdResultImage"
+                android:layout_below="@+id/thirdHomogImage"
+                opencv:srcCompat="@android:color/black" />
+
+            <ImageView
+                android:id="@+id/fourthHomogImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/fourthResultImage"
                 opencv:srcCompat="@android:color/black" />
 
         </LinearLayout>
@@ -74,4 +105,14 @@
 
 
     </ScrollView>
+
+    <TextView
+        android:id="@+id/notEnoughMatchesError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/notEnoughMatchesError"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="50dp" />
+
 </RelativeLayout>

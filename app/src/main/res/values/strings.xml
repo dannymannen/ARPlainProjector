@@ -7,4 +7,5 @@
     <string name="latestImageLabel">Latest Image</string>
     <string name="BaseImageLabel">First Image</string>
     <string name="notEnoughMatchesError">Not enough matches found between images</string>
+    <string name="resultSwitchText">Show point matchings</string>
 </resources>

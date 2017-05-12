@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Switch;
 
 import org.opencv.core.Mat;
 
@@ -18,7 +19,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private MainFragment mainFragment;
-    private ResultFragment resultFragment;
+    private PointMatchingResultFragment pointMatchingResultFragment;
+    private ObjectResultFragment objectResultFragment;
+
 
     private ViewPager viewPager;
     private ScreenSlidePagerAdapter pagerAdapter;
@@ -33,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("Hej2");
 
         mainFragment = new MainFragment();
-        resultFragment = new ResultFragment();
+        pointMatchingResultFragment = new PointMatchingResultFragment();
+        objectResultFragment = new ObjectResultFragment();
 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -41,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         viewPager = (ViewPager) findViewById(R.id.pager);
-        Fragment[] fragments = {mainFragment,resultFragment};
+        Fragment[] fragments = {mainFragment, pointMatchingResultFragment, objectResultFragment};
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),fragments);
         pagerAdapter.setLocked(true,0);
         viewPager.setAdapter(pagerAdapter);
@@ -69,17 +73,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showResults(View v){
-        ArrayList<Bitmap> resultImages = mainFragment.calculateResults();
-        for (Bitmap b:
-                resultImages ) {
+
+        Switch resultModeSwitch = (Switch) findViewById(R.id.resultSwitch);
+        boolean showMatchedPointsResult=resultModeSwitch.isChecked();
+
+        ArrayList<Bitmap> pointMatchingResultImages = mainFragment.calculatePointMatchingResults();
+        ArrayList<Bitmap> objectResultImages = mainFragment.calculateObjectResults();
+
+    /*    for (Bitmap b:
+                pointMatchingResultImages ) {
             System.out.println(b.toString());
+        }*/
+        if (showMatchedPointsResult){
+            pagerAdapter.setLocked(true,1);
+            pointMatchingResultFragment.setResults(pointMatchingResultImages);
+           // objectResultFragment.setResults(objectResultImages);
+        }else{
+            pagerAdapter.setLocked(true,2);
+            objectResultFragment.setResults(objectResultImages);
+           // pointMatchingResultFragment.setResults(pointMatchingResultImages);
         }
-        pagerAdapter.setLocked(true,1);
-        for (Bitmap b:
-                resultImages ) {
+ /*       for (Bitmap b:
+                pointMatchingResultImages ) {
             System.out.println(b.toString());
-        }
-        resultFragment.setResults(resultImages);
+        }*/
     }
 
     public void enterSnapMode(View v){

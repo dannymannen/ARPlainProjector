@@ -12,13 +12,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import Utilities.CircularToggleVisibilityAnimation;
-
 /**
  * Created by dat13aca on 26/04/2017.
  */
 
-public class ResultFragment extends Fragment {
+public class PointMatchingResultFragment extends Fragment {
 
 
 
@@ -31,7 +29,7 @@ public class ResultFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.result_fragment, container, false);
+        return inflater.inflate(R.layout.point_matching_result_fragment, container, false);
     }
 
 

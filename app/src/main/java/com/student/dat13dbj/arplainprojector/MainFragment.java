@@ -201,7 +201,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         //Load last supper image
         Mat resourceImage = null;
         try {
-            resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+            resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess_cyan);
         } catch (IOException e) {
             System.out.println("Fail");
             e.printStackTrace();
@@ -241,7 +241,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         for (int i =1; i<images.size(); i++){
 
             try {
-                resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+                resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess_cyan);
             } catch (IOException e) {
                 System.out.println("Fail");
                 e.printStackTrace();
@@ -353,21 +353,21 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         //Load last supper image
         Mat resourceImage = null;
         try {
-            resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+            resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess_cyan);
         } catch (IOException e) {
             System.out.println("Fail");
             e.printStackTrace();
         }
 
         Imgproc.resize(resourceImage,resourceImage,new Size(400,230));
-        Imgproc.cvtColor(resourceImage,resourceImage,Imgproc.COLOR_GRAY2RGBA);
+        Imgproc.cvtColor(resourceImage,resourceImage,Imgproc.COLOR_RGB2RGBA);
 
         for (int i = 0; i<input.rows(); i++){
             if(i>=input.rows()/4&&i<input.rows()*3/4){
                 for (int j = 0; j<input.cols(); j++){
                     if(j>=input.cols()/4&&j<input.cols()*3/4){
-                        System.out.println(i-input.rows()/4);
-                        System.out.println(j-input.cols()/4);
+                        //System.out.println(i-input.rows()/4);
+                        //System.out.println(j-input.cols()/4);
                         if(i-input.rows()/4<230&&j-input.cols()/4<400) {
                             input.put(i, j, resourceImage.get(i - input.rows() / 4, j - input.cols() / 4));
                         }
@@ -407,12 +407,14 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         for (int i =1; i<images.size(); i++){
 
             try {
-                resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess);
+                resourceImage = Utils.loadResource(getActivity(), R.mipmap.chess_cyan);
             } catch (IOException e) {
                 System.out.println("Fail");
                 e.printStackTrace();
             }
+
             Imgproc.resize(resourceImage,resourceImage,new Size(400,230));
+
 
             input = images.get(i).clone();
 
@@ -460,7 +462,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
                 Mat homogImage= new Mat();
 
-                Imgproc.warpPerspective(resourceImage, homogImage, homog, new Size(resourceImage.cols(), resourceImage.rows()));
+                Imgproc.warpPerspective(resourceImage, homogImage, homog, new Size(input.cols(), input.rows()));
                 System.out.println("Homog for image "+i+" size is: "+homog.rows()+" "+homog.cols());
                 System.out.println("Resource image size is: "+resourceImage.rows()+" "+resourceImage.cols());
 
@@ -473,9 +475,34 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
                 }
 
                 // Draw all matches between first and the ith image
-
                 MatOfDMatch better_matches_mat = new MatOfDMatch();
                 better_matches_mat.fromList(better_matches);
+
+                Imgproc.resize(homogImage,homogImage,new Size(input.cols(),input.rows()));
+
+                Imgproc.cvtColor(homogImage,homogImage,Imgproc.COLOR_RGB2RGBA);
+
+                int startFraction =5;
+                boolean useFraction = true;
+
+                for (int k = 0; k<input.rows(); k++){
+                        for (int l = 0; l<input.cols(); l++){
+                            if (useFraction) {
+                                if (k - input.rows() / startFraction >= 0 && l - input.cols() / startFraction >= 0) {
+                                    if (isNotBlack(homogImage.get(k - input.rows() / startFraction, l - input.cols() / startFraction))) {
+                                        //   printColVals(homogImage.get(k - input.rows() / 4, l - input.cols() / 4));
+                                        input.put(k, l, homogImage.get(k - input.rows() / startFraction, l - input.cols() / startFraction));
+                                    }
+                                }
+                            }else{
+                                if (isNotBlack(homogImage.get(k, l))) {
+                                    //   printColVals(homogImage.get(k - input.rows() / 4, l - input.cols() / 4));
+                                    input.put(k, l, homogImage.get(k, l));
+                                }
+                            }
+                        }
+                }
+
                 canvas=input.submat(input.rows()/4,input.rows()*3/4,input.cols()/4,input.cols()*3/4);
                 homogImage.copyTo(canvas);
                 currentResultImage = Bitmap.createBitmap(input.cols(), input.rows(),Bitmap.Config.ARGB_8888);
@@ -505,6 +532,28 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
         }
 
         return results;
+    }
+
+    private void printColVals(double[] doubles) {
+        for (double d: doubles){
+            System.out.println(d);
+        }
+        System.out.println("");
+    }
+
+    private boolean isNotBlack(double[] doubles) {
+        double threshold =0;
+        int counter =0;
+        for (double d: doubles){
+            if (d>threshold){
+                return true;
+            }
+            if (counter==2){
+                return false;
+            }
+            counter++;
+        }
+        return false;
     }
 
     public boolean areAllSnapsTaken() {

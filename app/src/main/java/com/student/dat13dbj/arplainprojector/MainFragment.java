@@ -361,15 +361,15 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
 
         Imgproc.resize(resourceImage,resourceImage,new Size(400,230));
         Imgproc.cvtColor(resourceImage,resourceImage,Imgproc.COLOR_RGB2RGBA);
-
+        int fraction = 20;
         for (int i = 0; i<input.rows(); i++){
-            if(i>=input.rows()/4&&i<input.rows()*3/4){
+            if(i>=input.rows()/fraction&&i<input.rows()*(fraction-1)/fraction){
                 for (int j = 0; j<input.cols(); j++){
-                    if(j>=input.cols()/4&&j<input.cols()*3/4){
+                    if(j>=input.cols()/fraction&&j<input.cols()*(fraction-1)/fraction){
                         //System.out.println(i-input.rows()/4);
                         //System.out.println(j-input.cols()/4);
-                        if(i-input.rows()/4<230&&j-input.cols()/4<400) {
-                            input.put(i, j, resourceImage.get(i - input.rows() / 4, j - input.cols() / 4));
+                        if(i-input.rows()/fraction<230&&j-input.cols()/fraction<400) {
+                            input.put(i, j, resourceImage.get(i - input.rows() / fraction, j - input.cols() / fraction));
                         }
                     }
                 }
@@ -483,7 +483,7 @@ public class MainFragment extends Fragment implements CvCameraViewListener2 {
                 Imgproc.cvtColor(homogImage,homogImage,Imgproc.COLOR_RGB2RGBA);
 
                 int startFraction =5;
-                boolean useFraction = true;
+                boolean useFraction = false;
 
                 for (int k = 0; k<input.rows(); k++){
                         for (int l = 0; l<input.cols(); l++){

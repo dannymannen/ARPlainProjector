@@ -17,23 +17,15 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private MainFragment mainFragment;
     private PointMatchingResultFragment pointMatchingResultFragment;
     private ObjectResultFragment objectResultFragment;
 
-
     private ViewPager viewPager;
     private ScreenSlidePagerAdapter pagerAdapter;
 
-    private ArrayList<Mat> images;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        System.out.println("Hej1");
-       // android.os.Debug.waitForDebugger();
-        System.out.println("Hej2");
 
         mainFragment = new MainFragment();
         pointMatchingResultFragment = new PointMatchingResultFragment();
@@ -46,25 +38,19 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         Fragment[] fragments = {mainFragment, pointMatchingResultFragment, objectResultFragment};
-        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),fragments);
-        pagerAdapter.setLocked(true,0);
+        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), fragments);
+        pagerAdapter.setLocked(true, 0);
         viewPager.setAdapter(pagerAdapter);
-
-
-       // System.out.println("fragment: "+viewPager.getCurrentItem());
-
 
     }
 
     @Override
     public void onResume() {
-        System.out.println("hejjj");
         super.onResume();
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
     }
 
@@ -72,41 +58,31 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public void showResults(View v){
+    public void showResults(View v) {
 
         Switch resultModeSwitch = (Switch) findViewById(R.id.resultSwitch);
-        boolean showMatchedPointsResult=resultModeSwitch.isChecked();
+        boolean showMatchedPointsResult = resultModeSwitch.isChecked();
 
         ArrayList<Bitmap> pointMatchingResultImages = mainFragment.calculatePointMatchingResults();
         ArrayList<Bitmap> objectResultImages = mainFragment.calculateObjectResults();
 
-    /*    for (Bitmap b:
-                pointMatchingResultImages ) {
-            System.out.println(b.toString());
-        }*/
-        if (showMatchedPointsResult){
-            pagerAdapter.setLocked(true,1);
+        if (showMatchedPointsResult) {
+            pagerAdapter.setLocked(true, 1);
             pointMatchingResultFragment.setResults(pointMatchingResultImages);
-           // objectResultFragment.setResults(objectResultImages);
-        }else{
-            pagerAdapter.setLocked(true,2);
+        } else {
+            pagerAdapter.setLocked(true, 2);
             objectResultFragment.setResults(objectResultImages);
-           // pointMatchingResultFragment.setResults(pointMatchingResultImages);
         }
- /*       for (Bitmap b:
-                pointMatchingResultImages ) {
-            System.out.println(b.toString());
-        }*/
     }
 
-    public void enterSnapMode(View v){
-        pagerAdapter.setLocked(true,0);
+    public void enterSnapMode(View v) {
+        pagerAdapter.setLocked(true, 0);
         mainFragment.clearImages();
     }
 
-    public void takeSnap(View v){
+    public void takeSnap(View v) {
         mainFragment.takeSnap(v);
-        if (mainFragment.areAllSnapsTaken()){
+        if (mainFragment.areAllSnapsTaken()) {
             showResults(v);
         }
     }
@@ -134,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             return fragments[position];
 
         }
+
         @Override
         public int getCount() {
             if (locked) return 1;

@@ -19,8 +19,6 @@ import java.util.ArrayList;
 public class PointMatchingResultFragment extends Fragment {
 
 
-
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -42,11 +40,9 @@ public class PointMatchingResultFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-
-        //createNotification("My notification", "Hello World!");
     }
 
-    public void setResults(ArrayList<Bitmap> results){
+    public void setResults(ArrayList<Bitmap> results) {
         ImageView firstResultImage = (ImageView) getView().findViewById(R.id.firstResultImage);
         ImageView secondResultImage = (ImageView) getView().findViewById(R.id.secondResultImage);
         ImageView thirdResultImage = (ImageView) getView().findViewById(R.id.thirdResultImage);
@@ -73,7 +69,7 @@ public class PointMatchingResultFragment extends Fragment {
 
         System.out.println(results.size());
 
-        switch (results.size()){
+        switch (results.size()) {
             case 2:
                 firstResultImage.setImageBitmap(results.get(0));
                 firstHomogImage.setImageBitmap(results.get(1));
@@ -128,7 +124,6 @@ public class PointMatchingResultFragment extends Fragment {
         }
 
     }
-
 
 
 }

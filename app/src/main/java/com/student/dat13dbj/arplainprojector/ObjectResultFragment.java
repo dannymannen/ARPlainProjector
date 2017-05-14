@@ -19,8 +19,6 @@ import java.util.ArrayList;
 public class ObjectResultFragment extends Fragment {
 
 
-
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -42,11 +40,9 @@ public class ObjectResultFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-
-        //createNotification("My notification", "Hello World!");
     }
 
-    public void setResults(ArrayList<Bitmap> results){
+    public void setResults(ArrayList<Bitmap> results) {
         ImageView firstResultImage = (ImageView) getView().findViewById(R.id.firstObjectImage);
         ImageView secondResultImage = (ImageView) getView().findViewById(R.id.secondObjectImage);
         ImageView thirdResultImage = (ImageView) getView().findViewById(R.id.thirdObjectImage);
@@ -63,7 +59,7 @@ public class ObjectResultFragment extends Fragment {
 
         System.out.println(results.size());
 
-        switch (results.size()){
+        switch (results.size()) {
             case 1:
                 firstResultImage.setImageBitmap(results.get(0));
 
@@ -99,7 +95,6 @@ public class ObjectResultFragment extends Fragment {
         }
 
     }
-
 
 
 }
